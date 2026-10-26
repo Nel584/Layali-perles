@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Contactez Layali Perles pour vos commandes de bayas et bracelets. Décrivez votre projet, nous vous répondons rapidement.">
+    <title>Layali Perles | Contact</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300;1,600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="page-inner page-contact">
+
+    <header id="header" class="header-solid header-light">
+        <a href="index.html" class="logo logo-dark">Layali <span>Perles</span></a>
+        <nav>
+            <ul class="nav-links nav-links-dark">
+                <li><a href="index.html">Accueil</a></li>
+                <li><a href="index.html#histoire">Histoire</a></li>
+                <li><a href="collection.html">Collection</a></li>
+                <li><a href="index.html#guide">Tailles</a></li>
+                <li><a href="contact.html" class="active" aria-current="page">Contact</a></li>
+            </ul>
+            <div class="burger burger-dark" id="burger">
+                <span></span><span></span><span></span>
+            </div>
+        </nav>
+    </header>
+
+    <div class="mobile-nav" id="mobileNav">
+        <a href="index.html" class="mobile-link">Accueil</a>
+        <a href="index.html#histoire" class="mobile-link">Notre Histoire</a>
+        <a href="collection.html" class="mobile-link">Collection</a>
+        <a href="index.html#guide" class="mobile-link">Guide des Tailles</a>
+        <a href="contact.html" class="mobile-link">Contact</a>
+    </div>
+
+    <main class="contact-page">
+        <div class="contact-page-inner">
+            <p class="contact-page-label">Contact</p>
+
+            <p class="contact-intro">
+                Nous sommes à votre disposition pour répondre à toutes vos questions
+                et serions ravis de vous faire découvrir l'univers Layali Perles.
+            </p>
+
+            <form class="contact-form" id="contactForm" novalidate>
+                <div class="form-field">
+                    <label for="contactName">Nom</label>
+                    <input type="text" id="contactName" name="name" autocomplete="name" placeholder="">
+                </div>
+
+                <div class="form-field">
+                    <label for="contactEmail">Email <span class="required">*</span></label>
+                    <input type="email" id="contactEmail" name="email" autocomplete="email" required placeholder="">
+                </div>
+
+                <div class="form-field">
+                    <label for="contactPhone">Téléphone <span class="required">*</span></label>
+                    <input type="tel" id="contactPhone" name="phone" autocomplete="tel" required placeholder="+229 01 XX XX XX XX">
+                </div>
+
+                <div class="form-field form-field-message">
+                    <label for="contactMessage">Message <span class="required">*</span></label>
+                    <textarea id="contactMessage" name="message" rows="6" required placeholder="Décrivez votre commande : modèle souhaité, taille, couleur, quantité…"></textarea>
+                </div>
+
+                <button type="submit" class="contact-submit">Envoyer</button>
+
+                <p class="form-disclaimer">
+                    Les champs marqués d'un astérisque (<span class="required">*</span>) sont obligatoires.
+                    Votre message sera transmis via WhatsApp pour une réponse rapide.
+                </p>
+            </form>
+
+            <div class="contact-alternatives">
+                <p>Vous pouvez également nous contacter directement :</p>
+                <p>
+                    <i class="fab fa-whatsapp"></i>
+                    WhatsApp :
+                    <a href="https://wa.me/2290192211895" target="_blank" rel="noopener">+229 01 92 21 18 95</a>
+                </p>
+                <p>
+                    <i class="fas fa-envelope"></i>
+                    Email :
+                    <a href="mailto:ehouans@gmail.com">ehouans@gmail.com</a>
+                </p>
+                <p>
+                    <i class="fab fa-instagram"></i>
+                    Instagram :
+                    <a href="https://instagram.com/sylas_dev" target="_blank" rel="noopener">@sylas_dev</a>
+                </p>
+                <p>
+                    <i class="fab fa-facebook-f"></i>
+                    Facebook :
+                    <a href="https://www.facebook.com/sylas.ehn" target="_blank" rel="noopener">Sylas Ehn</a>
+                </p>
+                <p>
+                    <i class="fas fa-map-marker-alt"></i>
+                    Cotonou, Bénin
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer-minimal">
+        <p>&copy; 2026 Layali Perles — Cotonou, Bénin 🇧🇯</p>
+    </footer>
+
+    <button class="cart-toggle-btn" id="cartToggleBtn" aria-label="Ouvrir le panier">
+        <i class="fas fa-shopping-bag"></i>
+        <span class="cart-badge" id="cartBadge">0</span>
+    </button>
+
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="cart-drawer-overlay" id="cartDrawerOverlay"></div>
+        <div class="cart-drawer-content">
+            <div class="cart-drawer-header">
+                <h3>Votre Panier</h3>
+                <button class="cart-close-btn" id="cartCloseBtn">&times;</button>
+            </div>
+            <div class="cart-items" id="cartItems">
+                <div class="cart-empty-message">Votre panier est vide.</div>
+            </div>
+            <div class="cart-drawer-footer">
+                <div class="cart-subtotal">
+                    <span>Sous-total</span>
+                    <span class="cart-total-price" id="cartTotal">0 FCFA</span>
+                </div>
+                <button class="cart-checkout-btn" id="cartCheckoutBtn">
+                    <i class="fab fa-whatsapp"></i> Commander sur WhatsApp
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

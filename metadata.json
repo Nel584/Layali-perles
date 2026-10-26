@@ -1,0 +1,6 @@
+{
+  "name": "Baya Jewelry - Écrin de Perles & Bijoux d'Afrique",
+  "description": "Boutique en ligne moderne de bayas et bijoux traditionnels africains faits main. Expérience d'achat fluide, tunnel de paiement simplifié et design élégant.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
