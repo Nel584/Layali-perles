@@ -16,30 +16,30 @@ export function HomePage({ onNavigate }: HomePageProps) {
     {
       id: 'femme' as CategoryType,
       title: 'Parures Féminines',
-      subtitle: 'Bayas de taille sensuels & perles de séduction',
+      subtitle: 'Bayas de taille sensuelles et perles de séduction',
       image: '/catalog/femme-1.jpg',
-      count: '11 modèles'
+      count: `${PRODUCTS.filter((product) => product.category === 'femme').length} modèles`
     },
     {
       id: 'homme' as CategoryType,
       title: 'Prestige Masculin',
       subtitle: 'Bracelets onyx, pierres volcaniques & hématite',
       image: '/catalog/homme-1.jpg',
-      count: '8 modèles'
+      count: `${PRODUCTS.filter((product) => product.category === 'homme').length} modèles`
     },
     {
       id: 'couple' as CategoryType,
       title: 'Alliances & Harmonie',
       subtitle: 'Bracelets assortis pour couples & âmes sœurs',
       image: '/catalog/couple-1.jpg',
-      count: '7 modèles'
+      count: `${PRODUCTS.filter((product) => product.category === 'couple').length} modèles`
     },
     {
       id: 'motifs' as CategoryType,
       title: 'Créations & Motifs',
       subtitle: 'Perles traditionnelles béninoises & chaînes de ventre',
       image: '/catalog/motif-4.webp',
-      count: '6 modèles'
+      count: `${PRODUCTS.filter((product) => product.category === 'motifs').length} modèles`
     }
   ];
 
@@ -71,10 +71,12 @@ export function HomePage({ onNavigate }: HomePageProps) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {categories.map((cat) => (
-            <div
+            <button
+              type="button"
               key={cat.id}
               onClick={() => onNavigate('collection', cat.id)}
-              className="group cursor-pointer rounded-2xl overflow-hidden relative aspect-[3/4] bg-stone-200 dark:bg-stone-850 border border-stone-200/80 dark:border-stone-800 shadow-md transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl"
+              aria-label={`Découvrir la collection ${cat.title}`}
+              className="group cursor-pointer rounded-2xl overflow-hidden relative aspect-[3/4] bg-stone-200 dark:bg-stone-850 border border-stone-200/80 dark:border-stone-800 shadow-md transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl text-left"
             >
               <img
                 src={cat.image}
@@ -102,7 +104,7 @@ export function HomePage({ onNavigate }: HomePageProps) {
                   <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </section>

@@ -1,20 +1,26 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Layali Perles
 
-# Run and deploy your AI Studio app
+Site vitrine et boutique en ligne de bijoux artisanaux et de bayas faits main à Cotonou, au Bénin.
 
-This contains everything you need to run your app locally.
+## Prérequis
 
-View your app in AI Studio: https://ai.studio/apps/34338012-4ed4-46cf-a731-857be46faf29
+- Node.js 20.19 ou plus récent
+- npm
 
-## Run Locally
+## Installation et lancement
 
-**Prerequisites:**  Node.js
+```bash
+npm install
+npm run dev
+```
 
+Vite indique l’adresse locale du site dans le terminal.
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+## Vérifications et compilation
+
+```bash
+npm run lint
+npm run build
+```
+
+Les commandes préparent un récapitulatif à transmettre à l’atelier sur WhatsApp. Aucun paiement n’est traité directement sur le site.

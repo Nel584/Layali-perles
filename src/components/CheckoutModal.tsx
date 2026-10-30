@@ -19,7 +19,6 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { PaymentMethod } from '../types';
 
 export function CheckoutModal() {
   const {
@@ -38,7 +37,7 @@ export function CheckoutModal() {
     paymentMethod,
     setPaymentMethod,
     lastOrder,
-    confirmOrder,
+    createOrderSummary,
     generateWhatsAppLink,
     clearCart
   } = useCart();
@@ -86,7 +85,7 @@ export function CheckoutModal() {
       setIsSubmitting(true);
       setTimeout(() => {
         setIsSubmitting(false);
-        confirmOrder();
+        createOrderSummary(paymentMethod === 'momo' ? mobileMoneyNumber.trim() || undefined : undefined);
         clearCart();
       }, 700);
     }
@@ -136,7 +135,7 @@ export function CheckoutModal() {
                 {checkoutStep === 1 && 'Vérification de votre sélection'}
                 {checkoutStep === 2 && 'Adresse & Coordonnées de Livraison'}
                 {checkoutStep === 3 && 'Sélection du Mode de Paiement'}
-                {checkoutStep === 4 && 'Commande Validée avec Succès !'}
+                {checkoutStep === 4 && 'Récapitulatif de commande'}
               </h3>
             </div>
             <button
@@ -273,11 +272,15 @@ export function CheckoutModal() {
                       <span>Frais d'expédition Bénin</span>
                     </span>
                     <span className="font-mono text-stone-900 dark:text-stone-200">
-                      {deliveryFee === 0 ? 'Gratuit (Offert)' : `${deliveryFee.toLocaleString('fr-FR')} FCFA`}
+                      {deliveryInfo.city === 'International / Diaspora'
+                        ? 'À confirmer avec l’atelier'
+                        : deliveryFee === 0
+                          ? 'Offerte'
+                          : `${deliveryFee.toLocaleString('fr-FR')} FCFA`}
                     </span>
                   </div>
                   <div className="flex justify-between text-base font-bold text-stone-900 dark:text-stone-100 pt-2 border-t border-stone-200 dark:border-stone-700">
-                    <span>Montant Total</span>
+                    <span>{deliveryInfo.city === 'International / Diaspora' ? 'Total provisoire (hors expédition)' : 'Total'}</span>
                     <span className="text-amber-600 dark:text-amber-400 font-mono">
                       {total.toLocaleString('fr-FR')} FCFA
                     </span>
@@ -298,10 +301,11 @@ export function CheckoutModal() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Full Name */}
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                      Nom & Prénom <span className="text-rose-500">*</span>
+                    <label htmlFor="order-full-name" className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                      Nom et prénom <span className="text-rose-500">*</span>
                     </label>
                     <input
+                      id="order-full-name"
                       type="text"
                       placeholder="Ex: Mireille Houndégbé"
                       value={deliveryInfo.fullName}
@@ -315,10 +319,11 @@ export function CheckoutModal() {
 
                   {/* Phone */}
                   <div>
-                    <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                      Numéro de Téléphone (Appels) <span className="text-rose-500">*</span>
+                    <label htmlFor="order-phone" className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                      Numéro de téléphone (appels) <span className="text-rose-500">*</span>
                     </label>
                     <input
+                      id="order-phone"
                       type="tel"
                       placeholder="+229 01 XX XX XX XX"
                       value={deliveryInfo.phone}
@@ -332,10 +337,11 @@ export function CheckoutModal() {
 
                   {/* WhatsApp Phone */}
                   <div>
-                    <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                      Numéro WhatsApp (Pour suivi & photo)
+                    <label htmlFor="order-whatsapp" className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                      Numéro WhatsApp (pour le suivi et les photos)
                     </label>
                     <input
+                      id="order-whatsapp"
                       type="tel"
                       placeholder="+229 92 21 18 95"
                       value={deliveryInfo.whatsapp}
@@ -346,10 +352,11 @@ export function CheckoutModal() {
 
                   {/* City */}
                   <div>
-                    <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                      Ville / Région <span className="text-rose-500">*</span>
+                    <label htmlFor="order-city" className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                      Ville / région <span className="text-rose-500">*</span>
                     </label>
                     <select
+                      id="order-city"
                       value={deliveryInfo.city}
                       onChange={(e) => setDeliveryInfo({ ...deliveryInfo, city: e.target.value })}
                       className="w-full px-3.5 py-2.5 text-xs border border-stone-300 dark:border-stone-700 rounded-xl bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
@@ -366,10 +373,11 @@ export function CheckoutModal() {
 
                   {/* District / Quartier */}
                   <div>
-                    <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                      Quartier / Repère précis <span className="text-rose-500">*</span>
+                    <label htmlFor="order-district" className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                      Quartier / repère précis <span className="text-rose-500">*</span>
                     </label>
                     <input
+                      id="order-district"
                       type="text"
                       placeholder="Ex: Haie Vive, Akpakpa, Vedoko..."
                       value={deliveryInfo.district}
@@ -383,10 +391,11 @@ export function CheckoutModal() {
 
                   {/* Address Details */}
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                    <label htmlFor="order-address" className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
                       Précisions sur l'adresse (Maison, Carrefour, Étage)
                     </label>
                     <input
+                      id="order-address"
                       type="text"
                       placeholder="Ex: 2ème ruelle après la pharmacie, portail noir"
                       value={deliveryInfo.addressDetails}
@@ -397,10 +406,11 @@ export function CheckoutModal() {
 
                   {/* Notes / Special Instructions */}
                   <div className="sm:col-span-2">
-                    <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                      Instruction spéciale pour la commande (Sur-mesure, emballage cadeau, etc.)
+                    <label htmlFor="order-notes" className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                      Consigne particulière (sur mesure, emballage cadeau, etc.)
                     </label>
                     <textarea
+                      id="order-notes"
                       rows={2}
                       placeholder="Ex: Tour de taille exact 78 cm, merci d'emballer dans une pochette velours cadeau discrète."
                       value={deliveryInfo.notes}
@@ -422,8 +432,25 @@ export function CheckoutModal() {
                 className="space-y-4"
               >
                 <p className="text-xs text-stone-500 dark:text-stone-400">
-                  Choisissez votre modalité de règlement préférée. Tout est pensé pour votre sérénité :
+                  Indiquez votre moyen de paiement préféré. Le règlement sera organisé avec l’atelier après confirmation de la disponibilité.
                 </p>
+
+                <div className="bg-stone-50 dark:bg-stone-800/40 p-4 rounded-xl border border-stone-200/80 dark:border-stone-700/60 space-y-2 text-xs">
+                  <div className="flex justify-between text-stone-600 dark:text-stone-400">
+                    <span>Livraison à {deliveryInfo.city}</span>
+                    <span>
+                      {deliveryInfo.city === 'International / Diaspora'
+                        ? 'À confirmer'
+                        : deliveryFee === 0
+                          ? 'Offerte'
+                          : `${deliveryFee.toLocaleString('fr-FR')} FCFA`}
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-bold text-stone-900 dark:text-stone-100">
+                    <span>{deliveryInfo.city === 'International / Diaspora' ? 'Total provisoire (hors expédition)' : 'Total à régler'}</span>
+                    <span className="text-amber-600 dark:text-amber-400 font-mono">{total.toLocaleString('fr-FR')} FCFA</span>
+                  </div>
+                </div>
 
                 <div className="space-y-3">
                   {/* MTN Mobile Money */}
@@ -453,14 +480,14 @@ export function CheckoutModal() {
                         </span>
                       </div>
                       <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
-                        Paiement direct et sécurisé au <strong>+229 92 21 18 95</strong>. Validation instantanée.
+                        Paiement à confirmer avec l’atelier au <strong>+229 92 21 18 95</strong>.
                       </p>
                       {paymentMethod === 'momo' && (
                         <div className="mt-3 p-2.5 bg-white dark:bg-stone-800 rounded-lg border border-amber-200 dark:border-amber-800 text-[11px] text-stone-700 dark:text-stone-300 space-y-1">
                           <div>Numéro MoMo Layali Perles : <strong className="font-mono text-amber-600 dark:text-amber-400">+229 92 21 18 95</strong></div>
                           <input
                             type="tel"
-                            placeholder="Votre numéro MoMo de débit (optionnel)"
+                            placeholder="Votre numéro MoMo (facultatif)"
                             value={mobileMoneyNumber}
                             onChange={(e) => setMobileMoneyNumber(e.target.value)}
                             className="w-full mt-1 px-2.5 py-1.5 text-[11px] border border-stone-300 dark:border-stone-600 rounded bg-stone-50 dark:bg-stone-700 text-stone-900 dark:text-stone-100"
@@ -492,7 +519,7 @@ export function CheckoutModal() {
                         Moov Money Bénin
                       </span>
                       <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
-                        Règlement par compte Moov Money sécurisé.
+                        Règlement à organiser avec l’atelier après confirmation de la commande.
                       </p>
                     </div>
                   </label>
@@ -548,7 +575,7 @@ export function CheckoutModal() {
                     <div className="flex-1">
                       <span className="text-xs font-bold text-stone-900 dark:text-stone-100 flex items-center gap-1.5">
                         <Smartphone className="w-4 h-4 text-cyan-500" />
-                        Wave (Transfert sans frais)
+                        Wave
                       </span>
                       <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
                         Disponible pour le Bénin, la Côte d'Ivoire et le Sénégal via scan QR ou numéro.
@@ -578,7 +605,7 @@ export function CheckoutModal() {
                         Carte Bancaire (Visa / Mastercard)
                       </span>
                       <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
-                        Protocole 3D-Secure avec passerelle internationale cryptée.
+                        Le paiement par carte n’est pas traité sur le site. Contactez l’atelier sur WhatsApp pour connaître les modalités.
                       </p>
                     </div>
                   </label>
@@ -606,7 +633,7 @@ export function CheckoutModal() {
                     Merci pour votre confiance !
                   </h3>
                   <p className="text-xs text-stone-500 dark:text-stone-400 max-w-md mx-auto mt-1">
-                    Votre commande a bien été enregistrée dans notre atelier. Nos artisanes préparent vos perles avec le plus grand soin.
+                    Votre récapitulatif est prêt. Envoyez-le à l’atelier sur WhatsApp pour confirmer la disponibilité, les frais et la livraison.
                   </p>
                 </div>
 
@@ -637,7 +664,7 @@ export function CheckoutModal() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center pt-2 border-t border-stone-200 dark:border-stone-700 text-sm font-bold">
-                    <span className="text-stone-900 dark:text-stone-100">Montant Total :</span>
+                    <span className="text-stone-900 dark:text-stone-100">{lastOrder.deliveryInfo.city === 'International / Diaspora' ? 'Total provisoire (hors expédition) :' : 'Total :'}</span>
                     <span className="text-amber-600 dark:text-amber-400 font-mono">
                       {lastOrder.total.toLocaleString('fr-FR')} FCFA
                     </span>
@@ -653,7 +680,7 @@ export function CheckoutModal() {
                     className="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs tracking-wider uppercase rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
                   >
                     <Send className="w-4 h-4" />
-                    <span>Finaliser / Suivre sur WhatsApp (+229 92 21 18 95)</span>
+                    <span>Envoyer ma demande sur WhatsApp (+229 92 21 18 95)</span>
                   </a>
                   <p className="text-[11px] text-stone-400 dark:text-stone-500">
                     Un message avec le récapitulatif complet de vos articles sera instantanément prêt à l'envoi.
@@ -696,7 +723,7 @@ export function CheckoutModal() {
                 className="py-3 px-6 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs tracking-wider uppercase rounded-xl transition-all flex items-center gap-2 shadow-md ml-auto disabled:opacity-50"
               >
                 <Sparkles className="w-4 h-4 text-amber-200" />
-                <span>{isSubmitting ? 'Validation en cours...' : 'Confirmer & Valider la Commande'}</span>
+                <span>{isSubmitting ? 'Préparation du récapitulatif...' : 'Préparer le récapitulatif'}</span>
               </button>
             )}
 

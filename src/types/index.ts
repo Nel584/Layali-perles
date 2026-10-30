@@ -47,6 +47,7 @@ export interface Order {
   total: number;
   deliveryInfo: DeliveryInfo;
   paymentMethod: PaymentMethod;
+  paymentPhone?: string;
   createdAt: string;
   status: 'pending' | 'confirmed' | 'delivered';
 }

@@ -30,12 +30,44 @@ export interface CustomerReview {
   likes: number;
 }
 
+function isCustomerReview(value: unknown): value is CustomerReview {
+  if (typeof value !== 'object' || value === null) return false;
+  const review = value as Record<string, unknown>;
+  return (
+    typeof review.id === 'string' &&
+    typeof review.name === 'string' &&
+    typeof review.city === 'string' &&
+    typeof review.productName === 'string' &&
+    typeof review.rating === 'number' &&
+    typeof review.date === 'string' &&
+    typeof review.packageCondition === 'string' &&
+    typeof review.deliverySpeed === 'string' &&
+    typeof review.pearlQuality === 'string' &&
+    typeof review.comment === 'string' &&
+    typeof review.verifiedDelivery === 'boolean' &&
+    typeof review.likes === 'number' &&
+    (review.photoUrl === undefined || typeof review.photoUrl === 'string')
+  );
+}
+
 interface ReviewsPageProps {
   onNavigate?: (page: PageId) => void;
 }
 
 export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
-  const [reviews, setReviews] = useState<CustomerReview[]>([]);
+  const [reviews, setReviews] = useState<CustomerReview[]>(() => {
+    try {
+      const saved = localStorage.getItem('layali_customer_reviews');
+      if (!saved) return [];
+      const parsed: unknown = JSON.parse(saved);
+      return Array.isArray(parsed) ? parsed.filter(isCustomerReview) : [];
+    } catch (error) {
+      console.error('Impossible de charger les avis enregistrés.', error);
+      return [];
+    }
+  });
+  const [storageError, setStorageError] = useState(false);
+  const [whatsappError, setWhatsappError] = useState(false);
 
   const [activeFilter, setActiveFilter] = useState<'all' | '5stars' | 'withPhoto' | 'cotonou'>('all');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -57,8 +89,10 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
   useEffect(() => {
     try {
       localStorage.setItem('layali_customer_reviews', JSON.stringify(reviews));
-    } catch {
-      // ignore
+      setStorageError(false);
+    } catch (error) {
+      console.error('Impossible d’enregistrer les avis sur cet appareil.', error);
+      setStorageError(true);
     }
   }, [reviews]);
 
@@ -97,10 +131,10 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
       comment: formComment.trim(),
       verifiedDelivery: false,
       photoUrl: formPhoto || undefined,
-      likes: 1
+      likes: 0
     };
 
-    setReviews([newReview, ...reviews]);
+    setReviews((previousReviews) => [newReview, ...previousReviews]);
     setSubmittedSuccess(true);
 
     if (sendToWhatsApp) {
@@ -114,7 +148,13 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
         `⚡ *Délai :* ${formDeliverySpeed}\n` +
         `💬 *Commentaire :* "${formComment.trim()}"`
       );
-      window.open(`https://wa.me/22992211895?text=${waText}`, '_blank');
+      const whatsappWindow = window.open(`https://wa.me/22992211895?text=${waText}`, '_blank');
+      if (whatsappWindow) {
+        whatsappWindow.opener = null;
+        setWhatsappError(false);
+      } else {
+        setWhatsappError(true);
+      }
     }
 
     // Reset Form
@@ -155,7 +195,7 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
             Avis &amp; Colis Livrés
           </h1>
           <p className="text-stone-600 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
-            Vous avez reçu votre commande ? Partagez l'état de votre colis, la conformité de vos perles et la rapidité du coursier à Cotonou et partout au Bénin.
+            Vous avez reçu votre commande ? Partagez votre expérience : état de l’emballage, qualité des perles et rapidité de la livraison, à Cotonou et partout au Bénin.
           </p>
         </div>
 
@@ -166,7 +206,7 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
               Vous avez reçu votre colis Layali Perles ?
             </h2>
             <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 max-w-xl">
-              Votre retour d'expérience aide nos artisans à perfectionner les emballages et la rapidité des livreurs. Donnez votre avis en 1 minute.
+              Votre retour d’expérience aide l’atelier à améliorer ses services. Déposez votre avis en une minute.
             </p>
           </div>
 
@@ -205,7 +245,7 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
                   Évaluez la réception de votre commande
                 </h3>
                 <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
-                  Votre avis sera publié instantanément sur cette page pour guider la communauté.
+                  Votre avis sera affiché ici sur cet appareil. Pour le transmettre à l’atelier, choisissez également l’envoi sur WhatsApp.
                 </p>
               </div>
 
@@ -216,7 +256,7 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
                     Merci infiniment pour votre retour !
                   </h4>
                   <p className="text-xs sm:text-sm text-emerald-700 dark:text-emerald-300">
-                    Votre avis post-livraison a été enregistré avec succès et apparaît désormais en tête de liste.
+                    Votre avis a été ajouté à cette page.
                   </p>
                 </div>
               ) : (
@@ -225,10 +265,11 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
                   {/* Row 1: Name and City */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1.5">
-                        Votre Prénom / Nom *
+                      <label htmlFor="review-name" className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1.5">
+                        Votre prénom et nom *
                       </label>
                       <input
+                        id="review-name"
                         type="text"
                         required
                         value={formName}
@@ -238,10 +279,11 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1.5">
-                        Ville &amp; Quartier de livraison *
+                      <label htmlFor="review-city" className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1.5">
+                        Ville et quartier de livraison *
                       </label>
                       <input
+                        id="review-city"
                         type="text"
                         required
                         value={formCity}
@@ -255,10 +297,11 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
                   {/* Row 2: Product Name & Star Rating */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1.5">
-                        Bijou ou Baya reçu
+                      <label htmlFor="review-product" className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1.5">
+                        Bijou ou baya reçu
                       </label>
                       <input
+                        id="review-product"
                         type="text"
                         value={formProduct}
                         onChange={(e) => setFormProduct(e.target.value)}
@@ -267,10 +310,10 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1.5">
+                      <p id="review-rating-label" className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1.5">
                         Note globale du colis ({formRating} / 5 étoiles)
-                      </label>
-                      <div className="flex items-center gap-2 py-1.5">
+                      </p>
+                      <div role="group" aria-labelledby="review-rating-label" className="flex items-center gap-2 py-1.5">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
                             type="button"
@@ -298,10 +341,11 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
                     
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div>
-                        <label className="block text-[11px] font-medium text-stone-600 dark:text-stone-400 mb-1">
-                          📦 État emballage :
+                        <label htmlFor="review-package" className="block text-[11px] font-medium text-stone-600 dark:text-stone-400 mb-1">
+                          📦 État de l’emballage :
                         </label>
                         <select
+                          id="review-package"
                           required
                           value={formPackageCondition}
                           onChange={(e) => setFormPackageCondition(e.target.value)}
@@ -316,28 +360,30 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-medium text-stone-600 dark:text-stone-400 mb-1">
+                        <label htmlFor="review-delivery" className="block text-[11px] font-medium text-stone-600 dark:text-stone-400 mb-1">
                           ⚡ Délai de livraison :
                         </label>
                         <select
+                          id="review-delivery"
                           required
                           value={formDeliverySpeed}
                           onChange={(e) => setFormDeliverySpeed(e.target.value)}
                           className="w-full px-2.5 py-1.5 text-xs rounded-lg border border-stone-200 dark:border-stone-700 bg-white dark:bg-stone-900 text-stone-800 dark:text-stone-200"
                         >
                           <option value="">Choisir le délai constaté</option>
-                          <option>Livré en moins de 24h</option>
-                          <option>Livré sous 24-48h à domicile</option>
+                          <option>Livré en moins de 24 h</option>
+                          <option>Livré entre 24 et 48 h à domicile</option>
                           <option>Respect du créneau convenu</option>
                           <option>Livreur ponctuel et courtois</option>
                         </select>
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-medium text-stone-600 dark:text-stone-400 mb-1">
+                        <label htmlFor="review-pearl-quality" className="block text-[11px] font-medium text-stone-600 dark:text-stone-400 mb-1">
                           💎 Finition des perles :
                         </label>
                         <select
+                          id="review-pearl-quality"
                           required
                           value={formPearlQuality}
                           onChange={(e) => setFormPearlQuality(e.target.value)}
@@ -355,10 +401,11 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
 
                   {/* Row 4: Customer Comment */}
                   <div>
-                    <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1.5">
-                      Votre avis détaillé sur le colis &amp; l'expérience *
+                    <label htmlFor="review-comment" className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1.5">
+                      Votre avis détaillé sur le colis et votre expérience *
                     </label>
                     <textarea
+                      id="review-comment"
                       required
                       rows={3}
                       value={formComment}
@@ -424,7 +471,7 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
                       className="w-full py-3.5 bg-stone-900 dark:bg-amber-400 hover:bg-stone-800 dark:hover:bg-amber-300 text-white dark:text-stone-950 font-bold rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
                     >
                       <Send className="w-4 h-4" />
-                      <span>Publier mon avis post-livraison</span>
+                      <span>Ajouter mon avis à cette page</span>
                     </button>
                   </div>
 
@@ -433,6 +480,17 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
 
             </div>
           </div>
+        )}
+
+        {storageError && (
+          <p role="alert" className="mb-6 text-center text-sm text-rose-600 dark:text-rose-400">
+            Les avis sont visibles pendant cette session, mais n’ont pas pu être enregistrés sur cet appareil.
+          </p>
+        )}
+        {whatsappError && (
+          <p role="alert" className="mb-6 text-center text-sm text-rose-600 dark:text-rose-400">
+            WhatsApp ne s’est pas ouvert. Autorisez les fenêtres contextuelles ou contactez-nous directement.
+          </p>
         )}
 
         {reviews.length > 0 && (
@@ -606,7 +664,7 @@ export function ReviewsPage({ onNavigate }: ReviewsPageProps) {
           <div className="py-12 text-center text-stone-500 dark:text-stone-400">
             <Package className="w-8 h-8 mx-auto mb-3 text-amber-500" />
             <p className="font-medium">Aucun avis pour le moment.</p>
-            <p className="mt-1 text-sm">Les avis seront publiés après réception des premières commandes.</p>
+            <p className="mt-1 text-sm">Les avis ajoutés ici sont enregistrés uniquement sur cet appareil.</p>
           </div>
         )}
 

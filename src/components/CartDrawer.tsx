@@ -14,6 +14,7 @@ export function CartDrawer() {
     deliveryFee,
     discount,
     couponCode,
+    deliveryInfo,
     applyCoupon,
     removeCoupon,
     total,
@@ -44,6 +45,8 @@ export function CartDrawer() {
     setCheckoutStep(1);
     setIsCheckoutOpen(true);
   };
+  const isLocalDelivery = ['Cotonou', 'Abomey-Calavi'].includes(deliveryInfo.city);
+  const isInternationalDelivery = deliveryInfo.city === 'International / Diaspora';
 
   if (!isCartOpen) return null;
 
@@ -94,16 +97,24 @@ export function CartDrawer() {
             {/* Free Delivery Bar */}
             {items.length > 0 && (
               <div className="px-6 py-2.5 bg-[#F3ECE2] dark:bg-[#1C1916] border-b border-[#EAE3D7] dark:border-[#26221D] text-xs">
-                {subtotal >= 25000 ? (
+                {isLocalDelivery && subtotal >= 25000 ? (
                   <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-medium">
                     <Check className="w-4 h-4" />
-                    <span>Félicitations ! Livraison offerte à Cotonou & Calavi.</span>
+                    <span>Félicitations ! La livraison est offerte à Cotonou et Abomey-Calavi.</span>
                   </div>
-                ) : (
+                ) : isLocalDelivery ? (
                   <div className="flex items-center justify-between text-stone-600 dark:text-stone-300">
                     <span>
                       Plus que <strong className="text-amber-600 dark:text-amber-400 font-mono">{(25000 - subtotal).toLocaleString('fr-FR')} FCFA</strong> pour la livraison gratuite !
                     </span>
+                  </div>
+                ) : isInternationalDelivery ? (
+                  <div className="flex items-center justify-between text-stone-600 dark:text-stone-300">
+                    <span>Frais d’expédition internationale à confirmer avec l’atelier.</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between text-stone-600 dark:text-stone-300">
+                    <span>Livraison hors Cotonou et Abomey-Calavi : <strong className="text-amber-600 dark:text-amber-400 font-mono">2 500 FCFA</strong>.</span>
                   </div>
                 )}
               </div>
@@ -249,11 +260,11 @@ export function CartDrawer() {
                   <div className="flex justify-between text-stone-500 dark:text-stone-400">
                     <span>Livraison estimée</span>
                     <span className="font-mono text-stone-800 dark:text-stone-200">
-                      {deliveryFee === 0 ? 'Gratuite' : `${deliveryFee.toLocaleString('fr-FR')} FCFA`}
+                      {isInternationalDelivery ? 'À confirmer' : deliveryFee === 0 ? 'Offerte' : `${deliveryFee.toLocaleString('fr-FR')} FCFA`}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm font-bold text-stone-900 dark:text-stone-100 pt-2 border-t border-stone-100 dark:border-stone-800">
-                    <span>Total Estimé</span>
+                    <span>{isInternationalDelivery ? 'Total provisoire (hors expédition)' : 'Total estimé'}</span>
                     <span className="font-mono text-amber-600 dark:text-amber-400 text-base">
                       {total.toLocaleString('fr-FR')} FCFA
                     </span>
@@ -272,7 +283,7 @@ export function CartDrawer() {
 
                 <div className="flex items-center justify-center gap-3 text-[11px] text-stone-400 dark:text-stone-500">
                   <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
-                  <span>Paiement sécurisé ou à la livraison au Bénin</span>
+                  <span>Paiement à confirmer avec l’atelier ou à la livraison au Bénin</span>
                 </div>
               </div>
             )}

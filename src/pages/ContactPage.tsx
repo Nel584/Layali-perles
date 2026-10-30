@@ -6,6 +6,7 @@ export function ContactPage() {
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -13,8 +14,10 @@ export function ContactPage() {
 
     const formatted = `Bonjour Layali Perles / Baya Jewelry ! ✨\nJe m'appelle *${name || 'Client'}* (Tél: ${phone || 'Non renseigné'}).\n\n*Mon message / demande de devis :*\n${message}`;
     const url = `https://wa.me/22992211895?text=${encodeURIComponent(formatted)}`;
-    window.open(url, '_blank');
-    setSubmitted(true);
+    const whatsappWindow = window.open(url, '_blank');
+    if (whatsappWindow) whatsappWindow.opener = null;
+    setSubmitted(Boolean(whatsappWindow));
+    setSubmitError(!whatsappWindow);
   };
 
   return (
@@ -148,10 +151,11 @@ export function ContactPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
-                  Votre Nom complet
+                <label htmlFor="contact-name" className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                  Votre nom complet
                 </label>
                 <input
+                  id="contact-name"
                   type="text"
                   placeholder="Ex: Sylas E."
                   value={name}
@@ -161,10 +165,11 @@ export function ContactPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+                <label htmlFor="contact-phone" className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
                   Téléphone / WhatsApp <span className="text-rose-500">*</span>
                 </label>
                 <input
+                  id="contact-phone"
                   type="tel"
                   placeholder="+229 92 21 18 95"
                   required
@@ -176,10 +181,11 @@ export function ContactPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
+              <label htmlFor="contact-message" className="block text-xs font-semibold text-stone-700 dark:text-stone-300 mb-1">
                 Votre Message ou Commande <span className="text-rose-500">*</span>
               </label>
               <textarea
+                id="contact-message"
                 rows={5}
                 required
                 placeholder="Décrivez votre demande : parure souhaitée, tour de taille en centimètres, demande d'emballage cadeau..."
@@ -200,8 +206,13 @@ export function ContactPage() {
             {submitted && (
               <div className="flex items-center gap-2 p-3 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300 rounded-xl text-xs">
                 <CheckCircle2 className="w-4 h-4 shrink-0" />
-                <span>Votre message est prêt dans WhatsApp. Nos artisanes vous répondent immédiatement !</span>
+                <span>WhatsApp s’est ouvert avec votre message. Envoyez-le pour contacter l’atelier.</span>
               </div>
+            )}
+            {submitError && (
+              <p role="alert" className="text-xs text-rose-600 dark:text-rose-400">
+                WhatsApp ne s’est pas ouvert. Autorisez les fenêtres contextuelles ou contactez-nous directement au +229 92 21 18 95.
+              </p>
             )}
           </form>
         </div>

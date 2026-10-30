@@ -85,7 +85,12 @@ export function CollectionSection({ initialCategory = 'all' }: CollectionSection
             {/* Sort Dropdown */}
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === 'featured' || value === 'price-asc' || value === 'price-desc') {
+                  setSortBy(value);
+                }
+              }}
               className="px-3.5 py-2.5 text-xs bg-white dark:bg-stone-850 border border-stone-200 dark:border-stone-700 rounded-xl text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
             >
               <option value="featured">Tri : Vedettes</option>

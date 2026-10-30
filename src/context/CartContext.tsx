@@ -34,7 +34,7 @@ interface CartContextType {
   paymentMethod: PaymentMethod;
   setPaymentMethod: (pm: PaymentMethod) => void;
   lastOrder: Order | null;
-  confirmOrder: () => Order;
+  createOrderSummary: (paymentPhone?: string) => Order;
   generateWhatsAppLink: (order?: Order) => string;
 }
 
@@ -124,8 +124,14 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     0
   );
 
-  // Free delivery above 25,000 FCFA, otherwise 1,500 FCFA in Cotonou/Calavi, 2,500 elsewhere
-  const deliveryFee = subtotal >= 25000 || subtotal === 0 ? 0 : 1500;
+  const isLocalDelivery = ['Cotonou', 'Abomey-Calavi'].includes(deliveryInfo.city);
+  const isInternationalDelivery = deliveryInfo.city === 'International / Diaspora';
+  const deliveryFee =
+    subtotal === 0 || isInternationalDelivery || (isLocalDelivery && subtotal >= 25000)
+      ? 0
+      : isLocalDelivery
+        ? 1500
+        : 2500;
 
   const discount = Math.round((subtotal * discountPercent) / 100);
   const total = Math.max(0, subtotal - discount + (subtotal > 0 ? deliveryFee : 0));
@@ -169,8 +175,8 @@ Je souhaite confirmer ma commande *#${orderToUse.id}* passée sur le site :
 ${itemsList}
 
 💰 *Sous-total :* ${orderToUse.subtotal.toLocaleString('fr-FR')} FCFA
-🚚 *Livraison :* ${orderToUse.deliveryFee === 0 ? 'Offerte (Gratuit)' : `${orderToUse.deliveryFee.toLocaleString('fr-FR')} FCFA`}
-${orderToUse.discount > 0 ? `🎟️ *Remise :* -${orderToUse.discount.toLocaleString('fr-FR')} FCFA\n` : ''}✨ *TOTAL :* *${orderToUse.total.toLocaleString('fr-FR')} FCFA*
+🚚 *Livraison :* ${orderToUse.deliveryInfo.city === 'International / Diaspora' ? 'Frais d’expédition à confirmer avec l’atelier' : orderToUse.deliveryFee === 0 ? 'Offerte' : `${orderToUse.deliveryFee.toLocaleString('fr-FR')} FCFA`}
+${orderToUse.discount > 0 ? `🎟️ *Remise :* -${orderToUse.discount.toLocaleString('fr-FR')} FCFA\n` : ''}✨ *TOTAL${orderToUse.deliveryInfo.city === 'International / Diaspora' ? ' PROVISOIRE (hors expédition)' : ''} :* *${orderToUse.total.toLocaleString('fr-FR')} FCFA*
 
 📍 *Coordonnées de livraison :*
 • Nom : ${orderToUse.deliveryInfo.fullName || 'Non spécifié'}
@@ -178,7 +184,7 @@ ${orderToUse.discount > 0 ? `🎟️ *Remise :* -${orderToUse.discount.toLocaleS
 • WhatsApp : ${orderToUse.deliveryInfo.whatsapp || orderToUse.deliveryInfo.phone}
 • Ville/Quartier : ${orderToUse.deliveryInfo.city} - ${orderToUse.deliveryInfo.district || 'Centre'}
 • Adresse : ${orderToUse.deliveryInfo.addressDetails || 'À préciser'}
-${orderToUse.deliveryInfo.notes ? `• Note : ${orderToUse.deliveryInfo.notes}\n` : ''}💳 *Mode de paiement choisi :* ${
+${orderToUse.paymentPhone ? `• Numéro utilisé pour le paiement : ${orderToUse.paymentPhone}\n` : ''}${orderToUse.deliveryInfo.notes ? `• Note : ${orderToUse.deliveryInfo.notes}\n` : ''}💳 *Mode de paiement choisi :* ${
         orderToUse.paymentMethod === 'momo'
           ? 'MTN Mobile Money'
           : orderToUse.paymentMethod === 'moov'
@@ -200,7 +206,7 @@ Merci de m'indiquer le délai exact pour la réception !`;
     return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
   };
 
-  const confirmOrder = (): Order => {
+  const createOrderSummary = (paymentPhone?: string): Order => {
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const newOrder: Order = {
       id: `BY-${randomSuffix}`,
@@ -211,8 +217,9 @@ Merci de m'indiquer le délai exact pour la réception !`;
       total,
       deliveryInfo: { ...deliveryInfo },
       paymentMethod,
+      paymentPhone,
       createdAt: new Date().toISOString(),
-      status: 'confirmed'
+      status: 'pending'
     };
 
     setLastOrder(newOrder);
@@ -251,7 +258,7 @@ Merci de m'indiquer le délai exact pour la réception !`;
         paymentMethod,
         setPaymentMethod,
         lastOrder,
-        confirmOrder,
+        createOrderSummary,
         generateWhatsAppLink
       }}
     >

@@ -78,6 +78,7 @@ export function CollectionPage({ initialCategory = 'all' }: CollectionPageProps)
           <Search className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
+            aria-label="Rechercher dans la collection"
             placeholder="Rechercher par nom, pierre, couleur..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -85,6 +86,7 @@ export function CollectionPage({ initialCategory = 'all' }: CollectionPageProps)
           />
           {searchQuery && (
             <button
+              aria-label="Effacer la recherche"
               onClick={() => setSearchQuery('')}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-600"
             >
@@ -99,8 +101,14 @@ export function CollectionPage({ initialCategory = 'all' }: CollectionPageProps)
             {filteredProducts.length} modèle{filteredProducts.length > 1 ? 's' : ''} trouvé{filteredProducts.length > 1 ? 's' : ''}
           </span>
           <select
+            aria-label="Trier la collection"
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value === 'featured' || value === 'price-asc' || value === 'price-desc') {
+                setSortBy(value);
+              }
+            }}
             className="px-3.5 py-2.5 text-xs bg-white dark:bg-[#1A1815] border border-[#EAE3D7] dark:border-[#2B2621] rounded-xl text-[#221E1A] dark:text-[#F7F3ED] focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
           >
             <option value="featured">Tri : Vedettes</option>
